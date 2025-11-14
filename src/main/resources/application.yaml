@@ -1,0 +1,42 @@
+spring:
+  application:
+    name: dds-busqueda
+
+  data:
+    mongodb:
+      uri: ${MONGODB_URI:mongodb://localhost:27017/dds_busqueda}
+      database: dds_busqueda
+      auto-index-creation: true
+
+  task:
+    execution:
+      pool:
+        core-size: 5
+        max-size: 10
+        queue-capacity: 100
+
+server:
+  port: ${PORT:8085}
+
+logging:
+  level:
+    ar.edu.utn.dds.k3003.busqueda: INFO
+    org.springframework.data.mongodb: DEBUG
+
+# URLs de otros módulos (para sincronización inicial)
+modules:
+  fuente:
+    url: ${DDS_FUENTE:http://localhost:8082}
+  pdi:
+    url: ${DDS_PDI:http://localhost:8081}
+  solicitudes:
+    url: ${DDS_SOLICITUDES:http://localhost:8080}
+
+# Configuración de búsqueda
+busqueda:
+  page-size-default: 10
+  page-size-max: 50
+  sync:
+    enabled: true
+    initial-delay: 30000  # 30 segundos después del startup
+    fixed-delay: 300000   # Cada 5 minutos
