@@ -56,25 +56,4 @@ public class BusquedaController {
         }
     }
 
-    /**
-     * Endpoint alternativo con POST (para consultas complejas).
-     */
-    @PostMapping
-    public ResponseEntity<BusquedaResponseDTO> buscarPost(
-            @RequestBody BusquedaRequestDTO request
-    ) {
-        log.info("🔍 POST /api/busqueda: {}", request);
-
-        try {
-            BusquedaResponseDTO response = busquedaService.buscar(request);
-            return ResponseEntity.ok(response);
-
-        } catch (IllegalArgumentException e) {
-            log.warn("⚠️ Request inválido: {}", e.getMessage());
-            return ResponseEntity.badRequest().build();
-        } catch (Exception e) {
-            log.error("❌ Error en búsqueda: {}", e.getMessage(), e);
-            return ResponseEntity.internalServerError().build();
-        }
-    }
 }

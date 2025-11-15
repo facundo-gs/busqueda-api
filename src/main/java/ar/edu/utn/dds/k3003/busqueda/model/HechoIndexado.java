@@ -16,12 +16,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-/**
- * Documento MongoDB para búsqueda de hechos indexados.
- * Incluye datos de Hecho + PDIs asociados para búsqueda full-text.
- *
- * IMPORTANTE: Los nombres de @Field deben coincidir con los usados en las queries del repositorio.
- */
+
+//Documento para búsqueda de hechos indexados.
+//Incluye datos de Hecho + PDIs asociados para búsqueda full-text
+//Los nombres de @Field deben coincidir con los usados en las queries del repositorio.
 @Document(collection = "hechos_indexados")
 @CompoundIndex(name = "titulo_coleccion_idx", def = "{'titulo': 1, 'nombreColeccion': 1}", unique = true)
 @Data
@@ -50,7 +48,6 @@ public class HechoIndexado {
 
     private String origen;
 
-    // Etiquetas manuales del hecho
     @Field("tags")
     @Builder.Default
     private List<String> etiquetas = new ArrayList<>();
@@ -88,10 +85,6 @@ public class HechoIndexado {
     @Builder.Default
     private Long version = 0L;
 
-    /**
-     * Agrega contenido de un PDI al índice.
-     * Evita duplicados usando el ID del PDI.
-     */
     public void agregarPdI(String pdiId, String contenido, String ocrText, List<String> etiquetasIA) {
         // Evitar agregar el mismo PDI múltiples veces
         if (pdiId != null && this.pdiIds.contains(pdiId)) {
@@ -124,9 +117,6 @@ public class HechoIndexado {
         this.version++;
     }
 
-    /**
-     * Actualiza un PDI existente (por ejemplo, después del procesamiento de imagen).
-     */
     public void actualizarPdI(String pdiId, String ocrText, List<String> etiquetasIA) {
         if (pdiId == null || !this.pdiIds.contains(pdiId)) {
             // El PDI no existe, agregarlo
@@ -151,18 +141,12 @@ public class HechoIndexado {
         this.version++;
     }
 
-    /**
-     * Marca el hecho como censurado (no aparecerá en búsquedas).
-     */
     public void censurar() {
         this.censurado = true;
         this.ultimaActualizacion = LocalDateTime.now();
         this.version++;
     }
 
-    /**
-     * Verifica si el hecho tiene un PDI específico indexado.
-     */
     public boolean tienePdI(String pdiId) {
         return this.pdiIds.contains(pdiId);
     }

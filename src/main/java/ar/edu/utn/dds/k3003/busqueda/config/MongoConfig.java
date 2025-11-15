@@ -9,18 +9,14 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.mongodb.config.AbstractMongoClientConfiguration;
 import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 
-/**
- * Configuración de MongoDB para el módulo de búsqueda.
- */
 @Configuration
 public class MongoConfig extends AbstractMongoClientConfiguration {
 
-    @Value("${spring.data.mongodb.uri:mongodb://localhost:27017/busqueda}")
+    @Value("${spring.data.mongodb.uri}")
     private String mongoUri;
 
-    @Value("${spring.data.mongodb.database:busqueda}")
+    @Value("${spring.data.mongodb.database}")
     private String databaseName;
 
     @Override

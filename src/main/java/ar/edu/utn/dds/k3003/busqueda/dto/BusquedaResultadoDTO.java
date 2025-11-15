@@ -5,9 +5,6 @@ import ar.edu.utn.dds.k3003.busqueda.model.HechoIndexado;
 import java.time.LocalDateTime;
 import java.util.List;
 
-/**
- * DTO para un resultado individual de búsqueda.
- */
 public record BusquedaResultadoDTO(
         String id,
         String titulo,
@@ -21,9 +18,7 @@ public record BusquedaResultadoDTO(
         String origen,
         double score
 ) {
-    /**
-     * Crea un DTO desde la entidad HechoIndexado.
-     */
+
     public static BusquedaResultadoDTO from(HechoIndexado hecho) {
         return new BusquedaResultadoDTO(
                 hecho.getId(),

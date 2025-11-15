@@ -43,7 +43,7 @@ busqueda:
   page-size-default: 10
   page-size-max: 50
   sync:
-    enabled: ${SYNC_ENABLED:false}
+    enabled: ${SYNC_ENABLED:true}
     initial-delay: 30000  # 30 segundos después del startup
     fixed-delay: 300000   # Cada 5 minutos
 

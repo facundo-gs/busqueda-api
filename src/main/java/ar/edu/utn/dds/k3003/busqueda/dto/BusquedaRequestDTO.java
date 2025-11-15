@@ -2,9 +2,6 @@ package ar.edu.utn.dds.k3003.busqueda.dto;
 
 import java.util.List;
 
-/**
- * DTO para solicitud de búsqueda.
- */
 public record BusquedaRequestDTO(
         String consulta,
         List<String> tags,

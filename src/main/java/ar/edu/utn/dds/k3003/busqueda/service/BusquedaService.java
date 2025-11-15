@@ -23,6 +23,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class BusquedaService {
 
+    public static final String RESULTADO = "resultado";
     private final HechoIndexadoRepository repository;
     private final MeterRegistry meterRegistry;
 
@@ -93,7 +94,7 @@ public class BusquedaService {
         // Contador de búsquedas realizadas
         meterRegistry.counter(
                 "metamapa.busqueda.consultas",
-                "resultado", resultado,
+                RESULTADO, resultado,
                 "tipo", tipoConsulta,
                 "tiene_resultados", response.totalResultados() > 0 ? "si" : "no"
         ).increment();
@@ -101,7 +102,7 @@ public class BusquedaService {
         // Tiempo de respuesta de búsqueda
         meterRegistry.timer(
                 "metamapa.busqueda.latencia",
-                "resultado", resultado,
+                RESULTADO, resultado,
                 "tipo", tipoConsulta
         ).record(duracionNanos, TimeUnit.NANOSECONDS);
 
@@ -115,14 +116,14 @@ public class BusquedaService {
 
         meterRegistry.counter(
                 "metamapa.busqueda.consultas",
-                "resultado", "error",
+                RESULTADO, "error",
                 "tipo", tipoConsulta,
                 "tiene_resultados", "no"
         ).increment();
 
         meterRegistry.timer(
                 "metamapa.busqueda.latencia",
-                "resultado", "error",
+                RESULTADO, "error",
                 "tipo", tipoConsulta
         ).record(duracionNanos, TimeUnit.NANOSECONDS);
     }

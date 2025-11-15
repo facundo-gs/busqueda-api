@@ -7,13 +7,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-/**
- * Controller REST para recibir notificaciones de indexación desde otros módulos.
- * Este es el punto de entrada para la consistencia eventual.
- *
- * Los módulos Fuente, PDI y Solicitudes llamarán a estos endpoints
- * cuando ocurran cambios relevantes.
- */
+
+//Controller para recibir notificaciones de indexación desde otros módulos.
+
 @RestController
 @RequestMapping("/api/indexacion")
 @Slf4j
@@ -25,13 +21,9 @@ public class IndexacionWebhookController {
         this.indexacionService = indexacionService;
     }
 
-    /**
-     * Webhook llamado por el módulo Fuente cuando se crea/actualiza un hecho.
-     * POST /api/indexacion/hecho
-     */
     @PostMapping("/hecho")
     public ResponseEntity<String> indexarHecho(@RequestBody HechoDTO hechoDTO) {
-        log.info("📨 Webhook recibido: indexar hecho id={}", hechoDTO.id());
+        log.info("Webhook recibido: indexar hecho id={}", hechoDTO.id());
         try {
             indexacionService.indexarHecho(hechoDTO);
             return ResponseEntity.ok("Hecho indexado correctamente");
@@ -42,13 +34,9 @@ public class IndexacionWebhookController {
         }
     }
 
-    /**
-     * Webhook llamado por el módulo PDI cuando se crea/actualiza un PDI.
-     * POST /api/indexacion/pdi
-     */
     @PostMapping("/pdi")
     public ResponseEntity<String> indexarPdI(@RequestBody PdIDTO pdiDTO) {
-        log.info("📨 Webhook recibido: indexar PDI id={} para hecho={}",
+        log.info("Webhook recibido: indexar PDI id={} para hecho={}",
                 pdiDTO.id(), pdiDTO.hechoId());
         try {
             indexacionService.indexarPdI(pdiDTO);
@@ -60,13 +48,9 @@ public class IndexacionWebhookController {
         }
     }
 
-    /**
-     * Webhook llamado por el módulo Solicitudes cuando se acepta una solicitud de borrado.
-     * POST /api/indexacion/censurar/{hechoId}
-     */
     @PostMapping("/censurar/{hechoId}")
     public ResponseEntity<String> censurarHecho(@PathVariable String hechoId) {
-        log.info("📨 Webhook recibido: censurar hecho id={}", hechoId);
+        log.info("Webhook recibido: censurar hecho id={}", hechoId);
         try {
             indexacionService.censurarHecho(hechoId);
             return ResponseEntity.ok("Hecho censurado correctamente");
@@ -77,9 +61,6 @@ public class IndexacionWebhookController {
         }
     }
 
-    /**
-     * Health check para verificar que el servicio de indexación está activo.
-     */
     @GetMapping("/health")
     public ResponseEntity<String> health() {
         return ResponseEntity.ok("Servicio de indexación activo");

@@ -11,13 +11,12 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Optional;
 
-/**
- * Servicio para indexar hechos y PDIs en MongoDB.
- * Mantiene consistencia eventual con los módulos de Fuente y PDI.
- *
- * NOTA: No usa @Transactional porque MongoDB no soporta transacciones
- * en operaciones simples (solo en replica sets con sesiones).
- */
+
+//Servicio para indexar hechos y PDIs en MongoDB.
+//Mantiene consistencia eventual con los módulos de Fuente y PDI
+//NOTA: No usa @Transactional porque MongoDB no soporta transacciones
+//en operaciones simples (solo en replica sets con sesiones).
+
 @Service
 @Slf4j
 public class IndexacionService {
@@ -33,7 +32,7 @@ public class IndexacionService {
      * Si el hecho ya existe, actualiza sus campos.
      */
     public void indexarHecho(HechoDTO hechoDTO) {
-        log.info("📝 Indexando hecho: {} - {}", hechoDTO.id(), hechoDTO.titulo());
+        log.info("Indexando hecho: {} - {}", hechoDTO.id(), hechoDTO.titulo());
 
         try {
             // Buscar si ya existe
@@ -51,7 +50,7 @@ public class IndexacionService {
             actualizarDesdeDTO(indexado, hechoDTO);
             repository.save(indexado);
 
-            log.info("✅ Hecho indexado exitosamente: {}", hechoDTO.id());
+            log.info("Hecho indexado exitosamente: {}", hechoDTO.id());
 
         } catch (Exception e) {
             log.error("❌ Error indexando hecho {}: {}", hechoDTO.id(), e.getMessage(), e);
@@ -65,13 +64,13 @@ public class IndexacionService {
      * Si el hecho no existe en el índice, se omite el PDI.
      */
     public void indexarPdI(PdIDTO pdiDTO) {
-        log.info("📝 Indexando PDI: {} para hecho: {}", pdiDTO.id(), pdiDTO.hechoId());
+        log.info("Indexando PDI: {} para hecho: {}", pdiDTO.id(), pdiDTO.hechoId());
 
         try {
             Optional<HechoIndexado> hechoOpt = repository.findById(pdiDTO.hechoId());
 
             if (hechoOpt.isEmpty()) {
-                log.warn("⚠️ Hecho {} no existe en índice. El PDI {} será indexado cuando llegue el hecho.",
+                log.warn("Hecho {} no existe en índice. El PDI {} será indexado cuando llegue el hecho.",
                         pdiDTO.hechoId(), pdiDTO.id());
                 // Opción: podrías guardar en una cola para reintentar más tarde
                 return;
@@ -100,7 +99,7 @@ public class IndexacionService {
             }
 
             repository.save(hecho);
-            log.info("✅ PDI indexado exitosamente: {}", pdiDTO.id());
+            log.info("PDI indexado exitosamente: {}", pdiDTO.id());
 
         } catch (Exception e) {
             log.error("❌ Error indexando PDI {}: {}", pdiDTO.id(), e.getMessage(), e);
@@ -138,26 +137,6 @@ public class IndexacionService {
         } catch (Exception e) {
             log.error("❌ Error censurando hecho {}: {}", hechoId, e.getMessage(), e);
             throw new RuntimeException("Error en censura de hecho", e);
-        }
-    }
-
-    /**
-     * Elimina un hecho del índice completamente.
-     * Uso: limpieza manual o casos especiales.
-     */
-    public void eliminarHecho(String hechoId) {
-        log.info("🗑️ Eliminando hecho del índice: {}", hechoId);
-
-        try {
-            if (repository.existsById(hechoId)) {
-                repository.deleteById(hechoId);
-                log.info("✅ Hecho eliminado del índice: {}", hechoId);
-            } else {
-                log.warn("⚠️ Hecho {} no existe en índice", hechoId);
-            }
-        } catch (Exception e) {
-            log.error("❌ Error eliminando hecho {}: {}", hechoId, e.getMessage(), e);
-            throw new RuntimeException("Error eliminando hecho del índice", e);
         }
     }
 

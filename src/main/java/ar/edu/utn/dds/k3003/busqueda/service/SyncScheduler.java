@@ -42,7 +42,7 @@ public class SyncScheduler {
     @EventListener(ApplicationReadyEvent.class)
     public void sincronizacionInicial() {
         if (!syncEnabled) {
-            log.info("⏭️ Sincronización inicial deshabilitada");
+            log.info("Sincronización inicial deshabilitada");
             return;
         }
 

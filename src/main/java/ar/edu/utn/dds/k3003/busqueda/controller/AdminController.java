@@ -96,25 +96,7 @@ public class AdminController {
     }
 
     /**
-     * Estadísticas del índice.
-     * GET /api/admin/stats
-     */
-    @GetMapping("/stats")
-    public ResponseEntity<Map<String, Object>> estadisticas() {
-        long total = repository.count();
-        long censurados = repository.countByCensuradoTrue();
-
-        Map<String, Object> stats = Map.of(
-                "totalHechosIndexados", total,
-                "hechosActivos", total - censurados,
-                "hechosCensurados", censurados
-        );
-
-        return ResponseEntity.ok(stats);
-    }
-
-    /**
-     * Limpiar todo el índice (PELIGROSO - solo para desarrollo).
+     * Limpiar tod el índice
      * DELETE /api/admin/clear
      */
     @DeleteMapping("/clear")

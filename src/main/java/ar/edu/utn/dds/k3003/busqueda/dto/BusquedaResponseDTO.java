@@ -2,9 +2,6 @@ package ar.edu.utn.dds.k3003.busqueda.dto;
 
 import java.util.List;
 
-/**
- * DTO para respuesta paginada de búsqueda.
- */
 public record BusquedaResponseDTO(
         List<BusquedaResultadoDTO> resultados,
         int paginaActual,
@@ -14,9 +11,7 @@ public record BusquedaResponseDTO(
         boolean tieneSiguiente,
         boolean tieneAnterior
 ) {
-    /**
-     * Crea una respuesta paginada.
-     */
+
     public static BusquedaResponseDTO of(
             List<BusquedaResultadoDTO> resultados,
             int pagina,
