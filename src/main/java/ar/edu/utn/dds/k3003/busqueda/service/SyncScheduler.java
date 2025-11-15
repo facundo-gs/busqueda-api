@@ -8,7 +8,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 
@@ -36,9 +35,9 @@ public class SyncScheduler {
         this.restClient = restClientBuilder.build();
     }
 
-    /**
-     * Sincronización inicial al arrancar
-     */
+
+    //  Sincronización inicial al arrancar
+
     @EventListener(ApplicationReadyEvent.class)
     public void sincronizacionInicial() {
         if (!syncEnabled) {
@@ -64,26 +63,26 @@ public class SyncScheduler {
     /**
      * Sincronización periódica
      */
-    @Scheduled(
-            initialDelayString = "${busqueda.sync.initial-delay}",
-            fixedDelayString = "${busqueda.sync.fixed-delay}"
-    )
-    public void sincronizacionPeriodica() {
-        if (!syncEnabled) {
-            return;
-        }
-
-        log.info("🔄 Sincronización periódica iniciada...");
-
-        try {
-            sincronizarHechos();
-            sincronizarPdIs();
-
-            log.info("✅ Sincronización periódica completada");
-        } catch (Exception e) {
-            log.error("❌ Error en sincronización periódica: {}", e.getMessage(), e);
-        }
-    }
+//    @Scheduled(
+//            initialDelayString = "${busqueda.sync.initial-delay}",
+//            fixedDelayString = "${busqueda.sync.fixed-delay}"
+//    )
+//    public void sincronizacionPeriodica() {
+//        if (!syncEnabled) {
+//            return;
+//        }
+//
+//        log.info("🔄 Sincronización periódica iniciada...");
+//
+//        try {
+//            sincronizarHechos();
+//            sincronizarPdIs();
+//
+//            log.info("✅ Sincronización periódica completada");
+//        } catch (Exception e) {
+//            log.error("❌ Error en sincronización periódica: {}", e.getMessage(), e);
+//        }
+//    }
 
     private void sincronizarHechos() {
         try {
