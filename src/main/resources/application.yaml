@@ -4,7 +4,7 @@ spring:
 
   data:
     mongodb:
-      uri: ${MONGODB_URI:mongodb://localhost:27017/dds_busqueda}
+      uri: ${MONGODB_URI}
       database: dds_busqueda
       auto-index-creation: true
 
@@ -14,6 +14,12 @@ spring:
         core-size: 5
         max-size: 10
         queue-capacity: 100
+  # ✅ AGREGAR: Para Jackson y fechas
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+    deserialization:
+      fail-on-unknown-properties: false
 
 server:
   port: ${PORT:8085}
@@ -37,6 +43,6 @@ busqueda:
   page-size-default: 10
   page-size-max: 50
   sync:
-    enabled: true
+    enabled: ${SYNC_ENABLED:false}
     initial-delay: 30000  # 30 segundos después del startup
     fixed-delay: 300000   # Cada 5 minutos

@@ -1,5 +1,6 @@
 package ar.edu.utn.dds.k3003.busqueda.service;
 
+import ar.edu.utn.dds.k3003.busqueda.dto.ColeccionDTO;
 import ar.edu.utn.dds.k3003.busqueda.dto.HechoDTO;
 import ar.edu.utn.dds.k3003.busqueda.dto.PdIDTO;
 import lombok.extern.slf4j.Slf4j;
@@ -135,9 +136,23 @@ public class SyncScheduler {
     }
 
     private List<String> obtenerColecciones() {
-        // TODO: Implementar según API de Fuente
-        // Por ahora, retornar lista hardcoded
-        return List.of("coleccion1", "coleccion2");
+        try {
+            // Obtener colecciones reales desde el módulo Fuente
+            List<ColeccionDTO> colecciones = restClient.get()
+                    .uri(fuenteUrl + "/api/colecciones")
+                    .retrieve()
+                    .body(new ParameterizedTypeReference<List<ColeccionDTO>>() {});
+
+            if (colecciones != null) {
+                return colecciones.stream()
+                        .map(ColeccionDTO::nombre)
+                        .toList();
+            }
+            return List.of();
+        } catch (Exception e) {
+            log.error("Error obteniendo colecciones: {}", e.getMessage());
+            return List.of();
+        }
     }
 
     private List<HechoDTO> obtenerHechosDeColeccion(String coleccion) {

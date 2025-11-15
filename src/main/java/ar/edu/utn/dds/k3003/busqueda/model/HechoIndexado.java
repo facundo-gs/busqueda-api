@@ -6,95 +6,164 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.CompoundIndex;
-import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.index.TextIndexed;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
+/**
+ * Documento MongoDB para búsqueda de hechos indexados.
+ * Incluye datos de Hecho + PDIs asociados para búsqueda full-text.
+ *
+ * IMPORTANTE: Los nombres de @Field deben coincidir con los usados en las queries del repositorio.
+ */
+@Document(collection = "hechos_indexados")
+@CompoundIndex(name = "titulo_coleccion_idx", def = "{'titulo': 1, 'nombreColeccion': 1}", unique = true)
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Document(collection = "hechos_indexados")
-@CompoundIndex(
-        name = "censurado_coleccion_idx",
-        def = "{'censurado': 1, 'nombreColeccion': 1}"
-)
 public class HechoIndexado {
 
     @Id
-    private String id;  // MongoDB ObjectId
+    private String id;  // ID del hecho original (de PostgreSQL)
 
-    // Identificación del hecho original
-    @Indexed(unique = true)
-    private String hechoId;
-
-    @Indexed
     private String nombreColeccion;
 
-    @Indexed
-    private String origen;
-
-    // Campos indexados para búsqueda full-text
-    @TextIndexed(weight = 10)  // Mayor peso al título
+    @TextIndexed(weight = 10)
     private String titulo;
 
     @TextIndexed(weight = 5)
     private String descripcion;
 
-    @Indexed
+    @TextIndexed(weight = 3)
     private String ubicacion;
 
     private String categoria;
 
-    @Indexed
     private LocalDateTime fecha;
 
-    // Etiquetas del hecho
-    @Indexed
+    private String origen;
+
+    // Etiquetas manuales del hecho
+    @Field("tags")
+    @Builder.Default
     private List<String> etiquetas = new ArrayList<>();
 
-    // PDIs asociados (desnormalizados)
-    private List<PdIIndexado> pdis = new ArrayList<>();
+    // Contenido de texto de los PDIs (para búsqueda full-text)
+    @TextIndexed(weight = 4)
+    @Field("pdi_contenido")
+    @Builder.Default
+    private List<String> pdiContenido = new ArrayList<>();
 
-    // Control de visibilidad
-    @Indexed
-    private Boolean censurado = false;
+    // Texto extraído por OCR de las imágenes
+    @TextIndexed(weight = 2)
+    @Field("ocr_text")
+    @Builder.Default
+    private List<String> ocrTexts = new ArrayList<>();
 
-    private LocalDateTime fechaCensura;
+    // Etiquetas generadas por IA (de imágenes)
+    @Field("etiquetas_ia")
+    @Builder.Default
+    private List<String> etiquetasIA = new ArrayList<>();
 
-    private String solicitudBorradoId;
+    // IDs de los PDIs asociados (para tracking)
+    @Field("pdi_ids")
+    @Builder.Default
+    private Set<String> pdiIds = new HashSet<>();
 
-    // Metadatos de sincronización
-    private LocalDateTime fechaCreacion;
+    // Flag para excluir de búsquedas (solicitud de borrado aceptada)
+    @Builder.Default
+    private boolean censurado = false;
 
-    private LocalDateTime fechaIndexacion;
-
+    // Timestamp de última modificación
     private LocalDateTime ultimaActualizacion;
 
-    @Indexed
-    private Integer version = 1;
+    // Versión para control de concurrencia optimista
+    @Builder.Default
+    private Long version = 0L;
 
-    // Para deduplicación
-    private List<String> colecciones = new ArrayList<>();
-
-    // Método helper para agregar PDI
-    public void agregarPdI(PdIIndexado pdi) {
-        if (this.pdis == null) {
-            this.pdis = new ArrayList<>();
+    /**
+     * Agrega contenido de un PDI al índice.
+     * Evita duplicados usando el ID del PDI.
+     */
+    public void agregarPdI(String pdiId, String contenido, String ocrText, List<String> etiquetasIA) {
+        // Evitar agregar el mismo PDI múltiples veces
+        if (pdiId != null && this.pdiIds.contains(pdiId)) {
+            // Ya existe, actualizar en lugar de agregar
+            return;
         }
-        this.pdis.add(pdi);
-    }
 
-    // Método helper para marcar como censurado
-    public void censurar(String solicitudId) {
-        this.censurado = true;
-        this.fechaCensura = LocalDateTime.now();
-        this.solicitudBorradoId = solicitudId;
+        if (pdiId != null) {
+            this.pdiIds.add(pdiId);
+        }
+
+        if (contenido != null && !contenido.isBlank()) {
+            this.pdiContenido.add(contenido.trim());
+        }
+
+        if (ocrText != null && !ocrText.isBlank()) {
+            this.ocrTexts.add(ocrText.trim());
+        }
+
+        if (etiquetasIA != null && !etiquetasIA.isEmpty()) {
+            // Evitar duplicados en etiquetas IA
+            for (String etiqueta : etiquetasIA) {
+                if (!this.etiquetasIA.contains(etiqueta)) {
+                    this.etiquetasIA.add(etiqueta);
+                }
+            }
+        }
+
         this.ultimaActualizacion = LocalDateTime.now();
         this.version++;
+    }
+
+    /**
+     * Actualiza un PDI existente (por ejemplo, después del procesamiento de imagen).
+     */
+    public void actualizarPdI(String pdiId, String ocrText, List<String> etiquetasIA) {
+        if (pdiId == null || !this.pdiIds.contains(pdiId)) {
+            // El PDI no existe, agregarlo
+            agregarPdI(pdiId, null, ocrText, etiquetasIA);
+            return;
+        }
+
+        // El PDI ya existe, solo agregar nuevos datos
+        if (ocrText != null && !ocrText.isBlank() && !this.ocrTexts.contains(ocrText.trim())) {
+            this.ocrTexts.add(ocrText.trim());
+        }
+
+        if (etiquetasIA != null) {
+            for (String etiqueta : etiquetasIA) {
+                if (!this.etiquetasIA.contains(etiqueta)) {
+                    this.etiquetasIA.add(etiqueta);
+                }
+            }
+        }
+
+        this.ultimaActualizacion = LocalDateTime.now();
+        this.version++;
+    }
+
+    /**
+     * Marca el hecho como censurado (no aparecerá en búsquedas).
+     */
+    public void censurar() {
+        this.censurado = true;
+        this.ultimaActualizacion = LocalDateTime.now();
+        this.version++;
+    }
+
+    /**
+     * Verifica si el hecho tiene un PDI específico indexado.
+     */
+    public boolean tienePdI(String pdiId) {
+        return this.pdiIds.contains(pdiId);
     }
 }
