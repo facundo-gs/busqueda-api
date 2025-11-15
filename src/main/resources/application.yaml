@@ -4,7 +4,7 @@ spring:
 
   data:
     mongodb:
-      uri: ${MONGODB_URI}
+      uri: ${MONGODBURI}
       database: dds_busqueda
       auto-index-creation: true
 
@@ -46,3 +46,22 @@ busqueda:
     enabled: ${SYNC_ENABLED:false}
     initial-delay: 30000  # 30 segundos después del startup
     fixed-delay: 300000   # Cada 5 minutos
+
+# Configuración datadog y actuator
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  metrics:
+    tags:
+      application: dds-busqueda
+      environment: ${ENVIRONMENT:development}
+  datadog:
+    metrics:
+      export:
+        enabled: true
+        api-key: ${DD_API_KEY}
+        application-key: ${DD_APP_KEY}
+        uri: https://api.datadoghq.com/
+        step: 10s
